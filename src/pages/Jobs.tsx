@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Table, Tag, Input, Card } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import { useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import api from '../services/api'
@@ -90,6 +91,7 @@ const columns: ColumnsType<Job> = [
 
 export default function Jobs() {
   const [search, setSearch] = useState('')
+  const navigate = useNavigate()
 
   const { data = [], isPending } = useQuery<Job[]>({
     queryKey: ['/api/Jobs'],
@@ -124,6 +126,10 @@ export default function Jobs() {
           loading={isPending}
           pagination={{ pageSize: 10, showSizeChanger: false }}
           size="middle"
+          onRow={(record) => ({
+            onClick: () => navigate(`/jobs/${record.jobID}`),
+            style: { cursor: 'pointer' },
+          })}
         />
       </Card>
     </div>

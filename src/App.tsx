@@ -5,6 +5,7 @@ import MainLayout from './layouts/MainLayout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Jobs from './pages/Jobs'
+import JobDetail from './pages/JobDetail'
 import Applicants from './pages/Applicants'
 import AdminUsers from './pages/AdminUsers'
 import Departments from './pages/Departments'
@@ -28,6 +29,7 @@ export default function App() {
             <Route element={<ProtectedLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/jobs" element={<Jobs />} />
+              <Route path="/jobs/:id" element={<JobDetail />} />
               <Route path="/applicants" element={<Applicants />} />
               <Route path="/admin-users" element={<AdminUsers />} />
               <Route path="/departments" element={<Departments />} />

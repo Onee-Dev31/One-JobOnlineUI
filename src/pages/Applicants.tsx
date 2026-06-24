@@ -19,19 +19,29 @@ interface Applicant {
 }
 
 const STATUS_OPTIONS = [
+  'Waiting HR Approve',
+  'Waiting candidate Info',
+  'Waiting HR Re-check',
   'Favorite',
   'Nagotiate Process',
+  'Nagotiate Success',
   'Nagotiate Failed',
+  'Nagotiate Cancel',
   'Employment confirm',
-  'Rejected',
+  'Reject',
 ]
 
 const statusColor: Record<string, string> = {
-  'Employment confirm': 'green',
+  'Waiting HR Approve': 'orange',
+  'Waiting candidate Info': 'orange',
+  'Waiting HR Re-check': 'orange',
   'Favorite': 'gold',
   'Nagotiate Process': 'blue',
+  'Nagotiate Success': 'cyan',
   'Nagotiate Failed': 'red',
-  'Rejected': 'default',
+  'Nagotiate Cancel': 'default',
+  'Employment confirm': 'green',
+  'Reject': 'red',
 }
 
 export default function Applicants() {

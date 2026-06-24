@@ -1,0 +1,95 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.backBtn {
+  margin-bottom: 4px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jobTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.tagRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  align-items: start;
+}
+
+.sectionLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.preText {
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.8;
+  color: #444;
+  font-family: inherit;
+  margin: 0;
+}
+
+.metaRow {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.metaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metaKey {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.metaVal {
+  font-size: 14px;
+  font-weight: 500;
+  color: #222;
+}
+
+.candidateName {
+  font-weight: 600;
+  color: #111;
+}
+
+.candidateSub {
+  font-size: 12px;
+  color: #999;
+  margin-top: 2px;
+}
