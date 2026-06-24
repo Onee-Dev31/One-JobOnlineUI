@@ -1,0 +1,14 @@
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  color: var(--ant-color-primary, #1677ff);
+  transition: font-size 0.2s;
+}
+
+.logoCollapsed {
+  font-size: 14px;
+}

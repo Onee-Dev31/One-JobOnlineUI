@@ -1,0 +1,139 @@
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.leftPanel {
+  flex: 1;
+  background: linear-gradient(135deg, #1677ff 0%, #0958d9 60%, #003eb3 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.circle1 {
+  top: -80px;
+  left: -80px;
+  width: 300px;
+  height: 300px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.circle2 {
+  bottom: -60px;
+  right: -60px;
+  width: 240px;
+  height: 240px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.circle3 {
+  top: 40%;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.leftContent {
+  position: relative;
+  text-align: center;
+  color: #fff;
+}
+
+.iconBox {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.brandIcon {
+  font-size: 36px !important;
+  color: #fff !important;
+}
+
+.brandName {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.brandTagline {
+  font-size: 15px;
+  opacity: 0.75;
+  line-height: 1.7;
+  max-width: 260px;
+}
+
+.rightPanel {
+  width: 460px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 56px;
+  background: #fff;
+  position: relative;
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 340px;
+}
+
+.formHeader {
+  margin-bottom: 40px;
+}
+
+.formTitle {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 6px;
+}
+
+.formSubtitle {
+  font-size: 14px;
+  color: #888;
+}
+
+.fieldLabel {
+  font-weight: 500;
+  color: #333;
+}
+
+.inputRounded {
+  border-radius: 8px;
+}
+
+.submitBtn {
+  border-radius: 8px;
+  height: 46px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.copyright {
+  position: absolute;
+  bottom: 24px;
+  font-size: 12px;
+  color: #ccc;
+}
