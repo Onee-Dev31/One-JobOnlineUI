@@ -56,7 +56,7 @@ export default function Applicants() {
   })
 
   const { mutate: updateStatus, isPending: isUpdating } = useMutation({
-    mutationFn: (payload: { ApplicantID: number; Status: string }) =>
+    mutationFn: (payload: { ApplicantID: number; Status: string; TypeMail: string }) =>
       api.put('/api/ApplicantNew/updateApplicantStatus', payload),
     onSuccess: () => {
       message.success('อัปเดตสถานะสำเร็จ')
@@ -100,7 +100,7 @@ export default function Applicants() {
           size="small"
           style={{ width: 180 }}
           disabled={isUpdating}
-          onChange={(val) => updateStatus({ ApplicantID: record.ApplicantID, Status: val })}
+          onChange={(val) => updateStatus({ ApplicantID: record.ApplicantID, Status: val, TypeMail: val })}
           options={STATUS_OPTIONS.map((s) => ({
             value: s,
             label: <Tag color={statusColor[s] ?? 'default'}>{s}</Tag>,

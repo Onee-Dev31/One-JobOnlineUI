@@ -87,7 +87,7 @@ export default function JobDetail() {
   })
 
   const { mutate: updateStatus } = useMutation({
-    mutationFn: (payload: { ApplicantID: number; Status: string }) =>
+    mutationFn: (payload: { ApplicantID: number; Status: string; TypeMail: string }) =>
       api.put('/api/ApplicantNew/updateApplicantStatus', payload),
     onSuccess: () => {
       message.success('อัปเดตสถานะสำเร็จ')
@@ -117,7 +117,7 @@ export default function JobDetail() {
       render: (status: string, record) => (
         <select
           value={status}
-          onChange={(e) => updateStatus({ ApplicantID: record.ApplicantID, Status: e.target.value })}
+          onChange={(e) => updateStatus({ ApplicantID: record.ApplicantID, Status: e.target.value, TypeMail: e.target.value })}
           style={{ padding: '2px 6px', borderRadius: 6, border: '1px solid #d9d9d9', fontSize: 13 }}
         >
           {STATUS_OPTIONS.map((s) => (
