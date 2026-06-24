@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import api from '../services/api'
+import { STATUS_OPTIONS, STATUS_COLOR, EMAIL_TRIGGER_TYPES } from '../constants/applicantStatus'
 import styles from './Applicants.module.css'
 
 interface Applicant {
@@ -18,36 +19,10 @@ interface Applicant {
   SubmissionDate: string
 }
 
-const STATUS_OPTIONS = [
-  'Waiting HR Approve',
-  'Waiting candidate Info',
-  'Waiting HR Re-check',
-  'Favorite',
-  'Nagotiate Process',
-  'Nagotiate Success',
-  'Nagotiate Failed',
-  'Nagotiate Cancel',
-  'Employment confirm',
-  'Reject',
-]
-
-const statusColor: Record<string, string> = {
-  'Waiting HR Approve': 'orange',
-  'Waiting candidate Info': 'orange',
-  'Waiting HR Re-check': 'orange',
-  'Favorite': 'gold',
-  'Nagotiate Process': 'blue',
-  'Nagotiate Success': 'cyan',
-  'Nagotiate Failed': 'red',
-  'Nagotiate Cancel': 'default',
-  'Employment confirm': 'green',
-  'Reject': 'red',
-}
-
 export default function Applicants() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string | undefined>()
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const queryClient = useQueryClient()
 
   const { data = [], isPending } = useQuery<Applicant[]>({
@@ -65,9 +40,26 @@ export default function Applicants() {
     onError: () => message.error('อัปเดตสถานะไม่สำเร็จ'),
   })
 
+  const handleStatusChange = (applicantID: number, newStatus: string) => {
+    const doUpdate = () => updateStatus({ ApplicantID: applicantID, Status: newStatus, TypeMail: newStatus })
+
+    if (EMAIL_TRIGGER_TYPES.has(newStatus)) {
+      modal.confirm({
+        title: 'การเปลี่ยนสถานะนี้จะส่ง Email',
+        content: `สถานะ "${newStatus}" จะส่ง email แจ้งอัตโนมัติ ต้องการดำเนินการต่อไหม?`,
+        okText: 'ยืนยัน ส่ง Email',
+        cancelText: 'ยกเลิก',
+        onOk: doUpdate,
+      })
+    } else {
+      doUpdate()
+    }
+  }
+
   const filtered = data.filter((a) => {
     const fullName = `${a.FirstNameThai} ${a.LastNameThai}`.toLowerCase()
-    const matchSearch = fullName.includes(search.toLowerCase()) ||
+    const matchSearch =
+      fullName.includes(search.toLowerCase()) ||
       a.Email.toLowerCase().includes(search.toLowerCase())
     const matchStatus = !statusFilter || a.Status === statusFilter
     return matchSearch && matchStatus
@@ -98,12 +90,12 @@ export default function Applicants() {
         <Select
           value={status}
           size="small"
-          style={{ width: 180 }}
+          className={styles.statusSelect}
           disabled={isUpdating}
-          onChange={(val) => updateStatus({ ApplicantID: record.ApplicantID, Status: val, TypeMail: val })}
+          onChange={(val) => handleStatusChange(record.ApplicantID, val)}
           options={STATUS_OPTIONS.map((s) => ({
             value: s,
-            label: <Tag color={statusColor[s] ?? 'default'}>{s}</Tag>,
+            label: <Tag color={STATUS_COLOR[s] ?? 'default'}>{s}</Tag>,
           }))}
         />
       ),

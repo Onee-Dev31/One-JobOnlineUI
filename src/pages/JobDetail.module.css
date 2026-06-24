@@ -109,3 +109,29 @@
 .statusSelect {
   width: 180px;
 }
+
+.approvalBtns {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.candidateHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.divider {
+  margin: 8px 0 16px !important;
+}
+
+.bulkInfo {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.bulkSelect {
+  width: 100%;
+}

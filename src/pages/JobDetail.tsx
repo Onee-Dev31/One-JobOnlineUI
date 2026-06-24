@@ -1,10 +1,12 @@
-import { Table, Tag, Card, Button, Spin, Divider, Select, App } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { useState } from 'react'
+import { Table, Tag, Card, Button, Spin, Divider, Select, Modal, Form, Input, App } from 'antd'
+import { ArrowLeftOutlined, CheckOutlined, CloseOutlined, ThunderboltOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useNavigate } from 'react-router-dom'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs from 'dayjs'
 import api from '../services/api'
+import { STATUS_OPTIONS, STATUS_COLOR, EMAIL_TRIGGER_TYPES } from '../constants/applicantStatus'
 import styles from './JobDetail.module.css'
 
 interface Job {
@@ -43,37 +45,24 @@ const approvalColor: Record<string, string> = {
   'Waiting HR Approve': 'orange',
   Rejected: 'red',
 }
-const statusColor: Record<string, string> = {
-  'Waiting HR Approve': 'orange',
-  'Waiting candidate Info': 'orange',
-  'Waiting HR Re-check': 'orange',
-  Favorite: 'gold',
-  'Nagotiate Process': 'blue',
-  'Nagotiate Success': 'cyan',
-  'Nagotiate Failed': 'red',
-  'Nagotiate Cancel': 'default',
-  'Employment confirm': 'green',
-  Reject: 'red',
-}
-
-const STATUS_OPTIONS = [
-  'Waiting HR Approve',
-  'Waiting candidate Info',
-  'Waiting HR Re-check',
-  'Favorite',
-  'Nagotiate Process',
-  'Nagotiate Success',
-  'Nagotiate Failed',
-  'Nagotiate Cancel',
-  'Employment confirm',
-  'Reject',
-]
 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { message } = App.useApp()
+  const { message, modal } = App.useApp()
   const queryClient = useQueryClient()
+
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([])
+  const [bulkModalOpen, setBulkModalOpen] = useState(false)
+  const [bulkStatus, setBulkStatus] = useState<string | undefined>()
+
+  const [approvalAction, setApprovalAction] = useState<'Approved' | 'Rejected' | null>(null)
+  const [approvalForm] = Form.useForm()
+
+  const invalidateCandidates = () =>
+    queryClient.invalidateQueries({ queryKey: ['/api/ApplicantNew/GetCandidateForJobs', id] })
+  const invalidateJob = () =>
+    queryClient.invalidateQueries({ queryKey: ['/api/Jobs', id] })
 
   const { data: job, isPending: jobLoading } = useQuery<Job>({
     queryKey: ['/api/Jobs', id],
@@ -87,14 +76,72 @@ export default function JobDetail() {
   })
 
   const { mutate: updateStatus } = useMutation({
-    mutationFn: (payload: { ApplicantID: number; Status: string; TypeMail: string }) =>
-      api.put('/api/ApplicantNew/updateApplicantStatus', payload),
-    onSuccess: () => {
-      message.success('อัปเดตสถานะสำเร็จ')
-      queryClient.invalidateQueries({ queryKey: ['/api/ApplicantNew/GetCandidateForJobs', id] })
-    },
+    mutationFn: (payload: object) => api.put('/api/ApplicantNew/updateApplicantStatus', payload),
+    onSuccess: () => { message.success('อัปเดตสถานะสำเร็จ'); invalidateCandidates() },
     onError: () => message.error('อัปเดตสถานะไม่สำเร็จ'),
   })
+
+  const { mutate: approveJob, isPending: isApproving } = useMutation({
+    mutationFn: (payload: { JobID: number; ApprovalStatus: string; Remark: string }) =>
+      api.put('/api/ApplicantNew/updateJobApprovalStatus', payload),
+    onSuccess: () => {
+      message.success(approvalAction === 'Approved' ? 'อนุมัติงานสำเร็จ' : 'ปฏิเสธงานสำเร็จ')
+      invalidateJob()
+      setApprovalAction(null)
+      approvalForm.resetFields()
+    },
+    onError: () => message.error('ดำเนินการไม่สำเร็จ'),
+  })
+
+  const handleStatusChange = (applicantID: number, newStatus: string) => {
+    const doUpdate = () =>
+      updateStatus({ ApplicantID: applicantID, Status: newStatus, TypeMail: newStatus })
+
+    if (EMAIL_TRIGGER_TYPES.has(newStatus)) {
+      modal.confirm({
+        title: 'การเปลี่ยนสถานะนี้จะส่ง Email',
+        content: `สถานะ "${newStatus}" จะส่ง email แจ้งอัตโนมัติ ต้องการดำเนินการต่อไหม?`,
+        okText: 'ยืนยัน ส่ง Email',
+        cancelText: 'ยกเลิก',
+        onOk: doUpdate,
+      })
+    } else {
+      doUpdate()
+    }
+  }
+
+  const handleBulkUpdate = () => {
+    if (!bulkStatus || selectedRowKeys.length === 0) return
+    const doUpdate = () => {
+      updateStatus({
+        Status: bulkStatus,
+        TypeMail: 'Selected',
+        IsBatch: 'true',
+        JobID: Number(id),
+        Candidates: selectedRowKeys.map((aid) => ({ ApplicantID: aid })),
+      })
+      setBulkModalOpen(false)
+      setBulkStatus(undefined)
+      setSelectedRowKeys([])
+    }
+
+    if (EMAIL_TRIGGER_TYPES.has(bulkStatus)) {
+      modal.confirm({
+        title: 'Bulk Update นี้จะส่ง Email',
+        content: `สถานะ "${bulkStatus}" จะส่ง email แจ้ง ${selectedRowKeys.length} คน ต้องการดำเนินการต่อไหม?`,
+        okText: 'ยืนยัน ส่ง Email',
+        cancelText: 'ยกเลิก',
+        onOk: doUpdate,
+      })
+    } else {
+      doUpdate()
+    }
+  }
+
+  const handleApprovalSubmit = (values: { Remark: string }) => {
+    if (!job || !approvalAction) return
+    approveJob({ JobID: job.jobID, ApprovalStatus: approvalAction, Remark: values.Remark ?? '' })
+  }
 
   const candidateColumns: ColumnsType<Candidate> = [
     {
@@ -120,18 +167,18 @@ export default function JobDetail() {
           size="small"
           className={styles.statusSelect}
           aria-label="เลือกสถานะผู้สมัคร"
-          onChange={(val) => updateStatus({ ApplicantID: record.ApplicantID, Status: val, TypeMail: val })}
+          onChange={(val) => handleStatusChange(record.ApplicantID, val)}
           options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
         />
       ),
     },
     {
-      title: 'สถานะ (Tag)',
+      title: '',
       dataIndex: 'Status',
       key: 'statusTag',
       width: 160,
       render: (status: string) => (
-        <Tag color={statusColor[status] ?? 'default'}>{status}</Tag>
+        <Tag color={STATUS_COLOR[status] ?? 'default'}>{status}</Tag>
       ),
     },
     {
@@ -181,11 +228,29 @@ export default function JobDetail() {
             <Tag color={approvalColor[job.approvalStatus] ?? 'default'}>{job.approvalStatus}</Tag>
           </div>
         </div>
+
+        {job.approvalStatus === 'Waiting HR Approve' && (
+          <div className={styles.approvalBtns}>
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              onClick={() => setApprovalAction('Approved')}
+            >
+              อนุมัติ
+            </Button>
+            <Button
+              danger
+              icon={<CloseOutlined />}
+              onClick={() => setApprovalAction('Rejected')}
+            >
+              ปฏิเสธ
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Body */}
       <div className={styles.body}>
-        {/* Left: description + requirements */}
         <div className={styles.leftCol}>
           <Card>
             <div className={styles.sectionLabel}>รายละเอียดงาน</div>
@@ -197,7 +262,6 @@ export default function JobDetail() {
           </Card>
         </div>
 
-        {/* Right: meta */}
         <Card>
           <div className={styles.metaRow}>
             {[
@@ -222,8 +286,19 @@ export default function JobDetail() {
 
       {/* Candidates */}
       <Card>
-        <div className={styles.sectionLabel}>ผู้สมัคร ({candidates.length} คน)</div>
-        <Divider style={{ margin: '8px 0 16px' }} />
+        <div className={styles.candidateHeader}>
+          <div className={styles.sectionLabel}>ผู้สมัคร ({candidates.length} คน)</div>
+          {selectedRowKeys.length > 0 && (
+            <Button
+              type="primary"
+              icon={<ThunderboltOutlined />}
+              onClick={() => setBulkModalOpen(true)}
+            >
+              อัปเดตสถานะ ({selectedRowKeys.length} คน)
+            </Button>
+          )}
+        </div>
+        <Divider className={styles.divider} />
         <Table
           columns={candidateColumns}
           dataSource={candidates}
@@ -231,8 +306,52 @@ export default function JobDetail() {
           loading={candLoading}
           pagination={false}
           size="middle"
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys as number[]),
+          }}
         />
       </Card>
+
+      {/* Approval Modal */}
+      <Modal
+        title={approvalAction === 'Approved' ? 'อนุมัติงาน' : 'ปฏิเสธงาน'}
+        open={approvalAction !== null}
+        onCancel={() => { setApprovalAction(null); approvalForm.resetFields() }}
+        onOk={() => approvalForm.submit()}
+        okText={approvalAction === 'Approved' ? 'อนุมัติ' : 'ปฏิเสธ'}
+        okButtonProps={{ danger: approvalAction === 'Rejected' }}
+        cancelText="ยกเลิก"
+        confirmLoading={isApproving}
+        destroyOnHidden
+      >
+        <Form form={approvalForm} layout="vertical" onFinish={handleApprovalSubmit}>
+          <Form.Item name="Remark" label="หมายเหตุ">
+            <Input.TextArea rows={3} placeholder="ระบุหมายเหตุ (ถ้ามี)" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Bulk Update Modal */}
+      <Modal
+        title="อัปเดตสถานะหลายคนพร้อมกัน"
+        open={bulkModalOpen}
+        onCancel={() => { setBulkModalOpen(false); setBulkStatus(undefined) }}
+        onOk={handleBulkUpdate}
+        okText="อัปเดต"
+        cancelText="ยกเลิก"
+        okButtonProps={{ disabled: !bulkStatus }}
+        destroyOnHidden
+      >
+        <div className={styles.bulkInfo}>เลือกสถานะสำหรับ {selectedRowKeys.length} คน</div>
+        <Select
+          className={styles.bulkSelect}
+          placeholder="เลือกสถานะ"
+          value={bulkStatus}
+          onChange={setBulkStatus}
+          options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
+        />
+      </Modal>
     </div>
   )
 }
