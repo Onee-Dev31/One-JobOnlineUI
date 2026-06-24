@@ -13,6 +13,9 @@ import Departments from './pages/Departments'
 import Roles from './pages/Roles'
 import JobList from './pages/public/JobList'
 import JobPublicDetail from './pages/public/JobPublicDetail'
+import ApplicantLogin from './pages/public/ApplicantLogin'
+import ApplicantRegister from './pages/public/ApplicantRegister'
+import ApplicantApply from './pages/public/ApplicantApply'
 
 const queryClient = new QueryClient()
 
@@ -38,6 +41,9 @@ export default function App() {
               <Route path="/departments" element={<Departments />} />
               <Route path="/roles" element={<Roles />} />
             </Route>
+            <Route path="/app/login" element={<ApplicantLogin />} />
+            <Route path="/app/register" element={<ApplicantRegister />} />
+            <Route path="/app/apply/:jobId" element={<ApplicantApply />} />
             <Route path="/app" element={<PublicLayout />}>
               <Route index element={<Navigate to="/app/jobs" replace />} />
               <Route path="jobs" element={<JobList />} />
