@@ -93,3 +93,19 @@
   color: #999;
   margin-top: 2px;
 }
+
+.loadingWrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.statusSelect {
+  width: 180px;
+}

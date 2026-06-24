@@ -1,4 +1,4 @@
-import { Table, Tag, Card, Button, Spin, Divider, App } from 'antd'
+import { Table, Tag, Card, Button, Spin, Divider, Select, App } from 'antd'
 import { ArrowLeftOutlined } from '@ant-design/icons'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -115,15 +115,14 @@ export default function JobDetail() {
       key: 'Status',
       width: 200,
       render: (status: string, record) => (
-        <select
+        <Select
           value={status}
-          onChange={(e) => updateStatus({ ApplicantID: record.ApplicantID, Status: e.target.value, TypeMail: e.target.value })}
-          style={{ padding: '2px 6px', borderRadius: 6, border: '1px solid #d9d9d9', fontSize: 13 }}
-        >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
+          size="small"
+          className={styles.statusSelect}
+          aria-label="เลือกสถานะผู้สมัคร"
+          onChange={(val) => updateStatus({ ApplicantID: record.ApplicantID, Status: val, TypeMail: val })}
+          options={STATUS_OPTIONS.map((s) => ({ value: s, label: s }))}
+        />
       ),
     },
     {
@@ -154,7 +153,7 @@ export default function JobDetail() {
 
   if (jobLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+      <div className={styles.loadingWrap}>
         <Spin size="large" />
       </div>
     )
@@ -187,7 +186,7 @@ export default function JobDetail() {
       {/* Body */}
       <div className={styles.body}>
         {/* Left: description + requirements */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className={styles.leftCol}>
           <Card>
             <div className={styles.sectionLabel}>รายละเอียดงาน</div>
             <pre className={styles.preText}>{job.jobDescription}</pre>
